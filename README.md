@@ -42,7 +42,11 @@ proyecto2_geo/
 ├── .env.example
 ├── data/
 │   ├── samples/
-│   │   ├── rutas_ejemplo.csv        # CSV con lat/lon por punto de visita
+│   │   ├── rutas_lat_long.csv       # CSV con coordenadas en formato lat/long
+    │   ├── rutas_dms.csv            # CSV con coordenadas en formato DMS (Grados, Minutos y Segundos)
+    │   ├── rutas_mgrs.csv           # CSV con coordenadas en formato MGRS (Referencia de cuadricula militar)
+    │   ├── rutas_utm.csv            # CSV con coordenadas en formato UTM (Universal Transversal de Mercator)
+    │   ├── rutas_wkt.csv            # CSV con coordenadas en formato WKT (Well Known Text)
 │   │   └── zonas_ejemplo.geojson    # GeoJSON con polígonos de zonas
 │   └── uploads/                     # Archivos subidos (auto-creada)
 ├── app/
