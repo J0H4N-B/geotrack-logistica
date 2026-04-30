@@ -18,7 +18,7 @@ sobre un mapa. Soporta archivos **CSV** (con columnas de coordenadas) y **GeoJSO
 ## 🚀 Instalación
 
 ```bash
-git clone https://github.com/TU_USUARIO/geotrack-logistica.git
+git clone https://github.com/J0H4N-B/geotrack-logistica.git
 cd geotrack-logistica
 
 python -m venv venv
