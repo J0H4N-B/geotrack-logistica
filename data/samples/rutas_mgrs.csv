@@ -1,0 +1,25 @@
+id,asesor,zona,dia_visita,mgrs,cliente,tipo_cliente,unidades_entregadas,valor_entrega_cop,estado_visita
+1,Carlos M.,Norte,Lunes,18NXL0291020787,Supermercado El Ahorro,Mayorista,320,4800000,Completada
+2,Carlos M.,Norte,Lunes,18NXL0365121761,Tienda Don Pedro,Minorista,45,675000,Completada
+3,Carlos M.,Norte,Lunes,18NXL0437222281,Minimarket La Esquina,Minorista,80,1200000,Completada
+4,Carlos M.,Norte,Lunes,18NXL0522523023,Distribuidora Rápida,Mayorista,410,6150000,Completada
+5,Carlos M.,Norte,Miércoles,18NXL0238920554,Bodega Central Norte,Mayorista,390,5850000,Completada
+6,Carlos M.,Norte,Miércoles,18NXL0313121296,Tienda La Esperanza,Minorista,60,900000,No Visitado
+7,Carlos M.,Norte,Viernes,18NXL0387322037,Supermercado Familiar,Mayorista,450,6750000,Completada
+8,Carlos M.,Norte,Viernes,18NXL0461522768,Abarrotes El Sol,Minorista,35,525000,Completada
+9,Laura P.,Sur,Lunes,18NWL9723706430,Megatienda Sur,Mayorista,280,4200000,Completada
+10,Laura P.,Sur,Lunes,18NWL9785905812,Tienda La Colina,Minorista,55,825000,Completada
+11,Laura P.,Sur,Lunes,18NWL9848105171,Distribuidora Sur Express,Mayorista,310,4650000,Completada
+12,Laura P.,Sur,Miércoles,18NWL9699306673,Minimercado Nuevo Horizonte,Minorista,70,1050000,Completada
+13,Laura P.,Sur,Miércoles,18NWL9761506055,Bodega El Progreso,Mayorista,295,4425000,No Visitado
+14,Laura P.,Sur,Viernes,18NWL9823705414,Tienda San José,Minorista,48,720000,Completada
+15,Laura P.,Sur,Viernes,18NWL9885904774,Supermercado La Victoria,Mayorista,340,5100000,Completada
+16,Andrés R.,Oriente,Lunes,18NXL0955114428,Bodega Oriente,Mayorista,540,2700000,Completada
+17,Andrés R.,Oriente,Lunes,18NXL1017215037,Tienda El Porvenir,Minorista,65,325000,Completada
+18,Andrés R.,Oriente,Lunes,18NXL1079215657,Minimercado Los Pinos,Minorista,90,450000,Completada
+19,Andrés R.,Oriente,Miércoles,18NXL1141216277,Distribuidora Este,Mayorista,610,3050000,Completada
+20,Andrés R.,Oriente,Miércoles,18NXL0930814184,Abarrotes La Montaña,Minorista,50,250000,No Visitado
+21,Diana V.,Occidente,Lunes,18NWL9476117604,Megabodega Occidente,Mayorista,180,2160000,Completada
+22,Diana V.,Occidente,Lunes,18NWL9538317107,Tienda El Retiro,Minorista,40,480000,Completada
+23,Diana V.,Occidente,Miércoles,18NWL9662616124,Distribuidora Oeste,Mayorista,220,2640000,Completada
+24,Diana V.,Occidente,Viernes,18NWL9513917350,Supermercado Las Acacias,Mayorista,260,3120000,Completada

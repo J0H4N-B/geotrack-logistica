@@ -1,0 +1,46 @@
+id,asesor,zona,dia_visita,lat,lon,cliente,tipo_cliente,unidades_entregadas,valor_entrega_cop,estado_visita
+1,Carlos M.,Norte,Lunes,4.7110,-74.0721,Supermercado El Ahorro,Mayorista,320,4800000,Completada
+2,Carlos M.,Norte,Lunes,4.7198,-74.0654,Tienda Don Pedro,Minorista,45,675000,Completada
+3,Carlos M.,Norte,Lunes,4.7245,-74.0589,Minimarket La Esquina,Minorista,80,1200000,Completada
+4,Carlos M.,Norte,Lunes,4.7312,-74.0512,Distribuidora Rápida,Mayorista,410,6150000,Completada
+5,Carlos M.,Norte,Miércoles,4.7089,-74.0768,Bodega Central Norte,Mayorista,390,5850000,Completada
+6,Carlos M.,Norte,Miércoles,4.7156,-74.0701,Tienda La Esperanza,Minorista,60,900000,No Visitado
+7,Carlos M.,Norte,Viernes,4.7223,-74.0634,Supermercado Familiar,Mayorista,450,6750000,Completada
+8,Carlos M.,Norte,Viernes,4.7289,-74.0567,Abarrotes El Sol,Minorista,35,525000,Completada
+9,Laura P.,Sur,Lunes,4.5812,-74.1234,Megatienda Sur,Mayorista,280,4200000,Completada
+10,Laura P.,Sur,Lunes,4.5756,-74.1178,Tienda La Colina,Minorista,55,825000,Completada
+11,Laura P.,Sur,Lunes,4.5698,-74.1122,Distribuidora Sur Express,Mayorista,310,4650000,Completada
+12,Laura P.,Sur,Miércoles,4.5834,-74.1256,Minimercado Nuevo Horizonte,Minorista,70,1050000,Completada
+13,Laura P.,Sur,Miércoles,4.5778,-74.1200,Bodega El Progreso,Mayorista,295,4425000,No Visitado
+14,Laura P.,Sur,Viernes,4.5720,-74.1144,Tienda San José,Minorista,48,720000,Completada
+15,Laura P.,Sur,Viernes,4.5662,-74.1088,Supermercado La Victoria,Mayorista,340,5100000,Completada
+16,Andrés R.,Oriente,Lunes,4.6534,-74.0123,Bodega Oriente,Mayorista,540,2700000,Completada
+17,Andrés R.,Oriente,Lunes,4.6589,-74.0067,Tienda El Porvenir,Minorista,65,325000,Completada
+18,Andrés R.,Oriente,Lunes,4.6645,-74.0011,Minimercado Los Pinos,Minorista,90,450000,Completada
+19,Andrés R.,Oriente,Miércoles,4.6701,-73.9955,Distribuidora Este,Mayorista,610,3050000,Completada
+20,Andrés R.,Oriente,Miércoles,4.6512,-74.0145,Abarrotes La Montaña,Minorista,50,250000,No Visitado
+21,Andrés R.,Oriente,Viernes,4.6568,-74.0089,Supermercado Oriente,Mayorista,580,2900000,Completada
+22,Andrés R.,Oriente,Viernes,4.6623,-74.0033,Tienda La Estrella,Minorista,75,375000,Completada
+23,Diana V.,Occidente,Lunes,4.6823,-74.1456,Megabodega Occidente,Mayorista,180,2160000,Completada
+24,Diana V.,Occidente,Lunes,4.6778,-74.1400,Tienda El Retiro,Minorista,40,480000,Completada
+25,Diana V.,Occidente,Lunes,4.6734,-74.1344,Minimercado Las Flores,Minorista,65,780000,Completada
+26,Diana V.,Occidente,Miércoles,4.6689,-74.1288,Distribuidora Oeste,Mayorista,220,2640000,Completada
+27,Diana V.,Occidente,Miércoles,4.6845,-74.1478,Bodega El Cedro,Mayorista,200,2400000,No Visitado
+28,Diana V.,Occidente,Viernes,4.6800,-74.1422,Supermercado Las Acacias,Mayorista,260,3120000,Completada
+29,Diana V.,Occidente,Viernes,4.6756,-74.1366,Tienda San Martín,Minorista,55,660000,Completada
+30,Miguel S.,Norte,Martes,4.7134,-74.0678,Distribuidora Premium Norte,Mayorista,430,3440000,Completada
+31,Miguel S.,Norte,Martes,4.7201,-74.0612,Tienda La Fuente,Minorista,52,416000,Completada
+32,Miguel S.,Norte,Jueves,4.7267,-74.0545,Bodega Los Álamos,Mayorista,470,3760000,Completada
+33,Miguel S.,Norte,Jueves,4.7178,-74.0634,Minimercado El Parque,Minorista,68,544000,No Visitado
+34,Sofia L.,Sur,Martes,4.5890,-74.1312,Supermercado Sur Plaza,Mayorista,370,5550000,Completada
+35,Sofia L.,Sur,Martes,4.5845,-74.1256,Tienda La Paz,Minorista,58,870000,Completada
+36,Sofia L.,Sur,Jueves,4.5800,-74.1200,Bodega Central Sur,Mayorista,390,5850000,Completada
+37,Sofia L.,Sur,Jueves,4.5755,-74.1144,Abarrotes El Refugio,Minorista,44,660000,Completada
+38,Ricardo B.,Oriente,Martes,4.6490,-74.0178,Megadistribuidora Oriente,Mayorista,620,4340000,Completada
+39,Ricardo B.,Oriente,Martes,4.6545,-74.0122,Tienda El Camino,Minorista,78,546000,Completada
+40,Ricardo B.,Oriente,Jueves,4.6601,-74.0066,Supermercado El Bosque,Mayorista,680,4760000,Completada
+41,Ricardo B.,Oriente,Jueves,4.6656,-74.0010,Minimercado Los Robles,Minorista,85,595000,No Visitado
+42,Valentina C.,Occidente,Martes,4.6867,-74.1500,Distribuidora Occidental,Mayorista,290,4350000,Completada
+43,Valentina C.,Occidente,Martes,4.6823,-74.1444,Tienda El Jardín,Minorista,48,720000,Completada
+44,Valentina C.,Occidente,Jueves,4.6778,-74.1388,Bodega Las Palmas,Mayorista,310,4650000,Completada
+45,Valentina C.,Occidente,Jueves,4.6734,-74.1332,Supermercado El Nogal,Mayorista,330,4950000,Completada

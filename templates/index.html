@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Georreferenciación Logística — Johan Bermudez</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Boxicons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════
+       Variables & Reset
+    ══════════════════════════════════════ */
+    :root {
+      --bg:          #080c10;
+      --surface:     #0d1117;
+      --surface2:    #131a24;
+      --surface3:    #192232;
+      --border:      rgba(0,200,120,0.14);
+      --border2:     rgba(0,200,120,0.28);
+      --green:       #00c878;
+      --green-dim:   #00874f;
+      --green-pale:  rgba(0,200,120,0.08);
+      --amber:       #f5a623;
+      --red:         #f43f5e;
+      --text:        #c8d8e8;
+      --muted:       #4a6070;
+      --white:       #e8f0f8;
+      --font-h:      'Rajdhani', sans-serif;
+      --font-m:      'JetBrains Mono', monospace;
+      --radius:      8px;
+      --glow-g:      0 0 20px rgba(0,200,120,0.2);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-h);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Scan-line texture overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.06) 2px,
+        rgba(0,0,0,0.06) 4px
+      );
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* Grid pattern */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,120,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,120,.025) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative; z-index: 100;
+      height: 54px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .h-left { display: flex; align-items: center; gap: 14px; }
+
+    .h-logo {
+      width: 34px; height: 34px;
+      border: 1.5px solid var(--green);
+      border-radius: 6px;
+      display: grid; place-items: center;
+      color: var(--green); font-size: 18px;
+      box-shadow: var(--glow-g);
+    }
+
+    .h-title {
+      font-size: 1.1rem; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--white);
+    }
+
+    .h-title span { color: var(--green); }
+
+    .h-right { display: flex; align-items: center; gap: 16px; }
+
+    .h-status {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-m); font-size: .68rem; color: var(--muted);
+    }
+
+    .h-status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,200,120,.4); }
+      50%       { opacity: .7; box-shadow: 0 0 0 4px rgba(0,200,120,0); }
+    }
+
+    .h-badge {
+      font-family: var(--font-m); font-size: .68rem;
+      color: var(--green); border: 1px solid var(--border2);
+      padding: 3px 10px; border-radius: 20px;
+      background: var(--green-pale);
+      letter-spacing: .5px;
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      height: calc(100vh - 54px);
+      position: relative; z-index: 1;
+    }
+
+    /* ── Panel izquierdo ── */
+    .panel {
+      background: var(--surface);
+      border-right: 1px solid var(--border2);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1; padding: 12px 8px;
+      font-family: var(--font-h); font-size: .8rem;
+      font-weight: 600; letter-spacing: .8px; text-transform: uppercase;
+      color: var(--muted); background: transparent; border: none;
+      cursor: pointer; transition: color .2s, background .2s;
+      border-bottom: 2px solid transparent;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    .tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+      background: var(--green-pale);
+    }
+
+    .tab:hover:not(.active) { color: var(--text); }
+
+    .panel-body {
+      flex: 1; overflow-y: auto;
+      padding: 24px 22px;
+      display: flex; flex-direction: column; gap: 22px;
+    }
+
+    .panel-section { display: none; flex-direction: column; gap: 18px; }
+    .panel-section.active { display: flex; }
+
+    /* ── Section labels ── */
+    .s-label {
+      font-family: var(--font-m); font-size: .72rem;
+      color: var(--green); letter-spacing: 2px; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+    .s-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      border: 1.5px dashed rgba(0,200,120,0.35);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer; position: relative;
+      transition: border-color .2s, background .2s;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--green);
+      background: var(--green-pale);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+
+    .upload-zone-icon {
+      font-size: 2.6rem; color: var(--green); display: block; margin-bottom: 12px;
+    }
+
+    .upload-zone-text { font-size: .92rem; color: var(--muted); line-height: 1.6; }
+    .upload-zone-text strong { color: var(--text); }
+    .upload-zone-filename {
+      margin-top: 10px; font-family: var(--font-m);
+      font-size: .78rem; color: var(--green);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 18px; border-radius: var(--radius);
+      font-family: var(--font-h); font-weight: 600; font-size: .92rem;
+      letter-spacing: .5px; text-transform: uppercase;
+      cursor: pointer; border: none; transition: .2s; text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--green); color: #050a06;
+    }
+    .btn-primary:hover { background: #00e890; box-shadow: var(--glow-g); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    .btn-outline {
+      background: transparent; color: var(--green);
+      border: 1px solid var(--border2);
+    }
+    .btn-outline:hover { background: var(--green-pale); }
+
+    .btn-ghost {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border);
+      font-size: .84rem;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+    .btn-full { width: 100%; }
+
+    /* ── Samples row ── */
+    .samples-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .samples-row .btn { flex: 1 1 calc(33% - 6px); font-size: .72rem; padding: 7px 8px; min-width: 80px; }
+
+    /* ── Alert ── */
+    .alert {
+      border-radius: var(--radius); padding: 12px 14px;
+      font-family: var(--font-m); font-size: .78rem; line-height: 1.6;
+      display: none;
+    }
+    .alert.visible { display: block; }
+    .alert-error { background: rgba(244,63,94,.1); border: 1px solid rgba(244,63,94,.3); color: #f87171; }
+    .alert-warn  { background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); color: #fbbf24; }
+    .alert-info  { background: var(--green-pale); border: 1px solid var(--border2); color: var(--green); }
+
+    /* ── File info banner ── */
+    .file-info {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-family: var(--font-m); font-size: .78rem;
+      display: flex; align-items: center; gap: 12px; color: var(--muted);
+    }
+    .file-info i { color: var(--green); font-size: 1.2rem; }
+    .file-info strong { color: var(--text); }
+
+    /* ── Config selects ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-family: var(--font-m); font-size: .72rem; color: var(--green); text-transform: uppercase; letter-spacing: 1px; }
+    .field select, .field input {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--font-m); font-size: .84rem;
+      padding: 9px 12px; border-radius: 6px; outline: none; width: 100%;
+      cursor: pointer; transition: border-color .2s;
+    }
+    .field select:focus, .field input:focus { border-color: var(--green); }
+
+    /* ── KPIs ── */
+    .kpis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 15px;
+      transition: border-color .2s;
+    }
+    .kpi:hover { border-color: var(--green); }
+    .kpi-label { font-family: var(--font-m); font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .kpi-val { font-family: var(--font-m); font-size: 1.15rem; color: var(--green); font-weight: 500; margin-top: 5px; }
+
+    /* ── Filtros ── */
+    .filter-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .pill {
+      font-family: var(--font-m); font-size: .74rem;
+      padding: 5px 12px; border-radius: 20px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer; transition: .15s;
+    }
+    .pill.active { border-color: var(--green); color: var(--green); background: var(--green-pale); }
+
+    /* ── Map panel ── */
+    .map-wrap { position: relative; flex: 1; }
+    #map { width: 100%; height: 100%; }
+
+    /* Map overlay controls */
+    .map-controls {
+      position: absolute; top: 14px; right: 14px; z-index: 500;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .map-btn {
+      width: 36px; height: 36px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 6px; display: grid; place-items: center;
+      color: var(--green); font-size: 1.1rem; cursor: pointer;
+      transition: .2s;
+    }
+    .map-btn:hover { background: var(--green-pale); box-shadow: var(--glow-g); }
+    .map-btn.active { background: var(--green); color: #050a06; }
+
+    /* Map legend */
+    .map-legend {
+      position: absolute; bottom: 24px; left: 14px; z-index: 500;
+      background: rgba(13,17,23,0.9);
+      border: 1px solid var(--border2);
+      border-radius: 8px; padding: 12px 14px;
+      min-width: 140px; backdrop-filter: blur(8px);
+    }
+    .legend-title {
+      font-family: var(--font-m); font-size: .62rem;
+      color: var(--green); letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-label { font-family: var(--font-m); font-size: .7rem; color: var(--muted); }
+
+    /* Map stat bar — top-left del área del mapa */
+    .map-stat {
+      position: absolute; top: 14px; left: 14px; z-index: 500;
+      background: rgba(13,17,23,0.9);
+      border: 1px solid var(--border2);
+      border-radius: 8px; padding: 8px 14px;
+      font-family: var(--font-m); font-size: .72rem;
+      color: var(--muted); backdrop-filter: blur(8px);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .map-stat span { color: var(--green); font-weight: 500; }
+    .map-stat i { font-size: .9rem; }
+
+    /* Layer picker */
+    .layer-picker {
+      position: absolute; top: 14px; right: 60px; z-index: 500;
+      background: rgba(13,17,23,0.95);
+      border: 1px solid var(--border2);
+      border-radius: 8px; padding: 10px;
+      backdrop-filter: blur(12px);
+      flex-direction: column; gap: 4px;
+      min-width: 148px;
+    }
+    .layer-picker-title {
+      font-family: var(--font-m); font-size: .6rem;
+      color: var(--green); letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 2px 4px 6px; border-bottom: 1px solid var(--border);
+      margin-bottom: 2px; display: flex; align-items: center; gap: 6px;
+    }
+    .layer-opt {
+      display: flex; align-items: center; gap: 8px;
+      background: transparent; border: 1px solid transparent;
+      color: var(--muted); font-family: var(--font-m); font-size: .76rem;
+      padding: 6px 10px; border-radius: 6px;
+      cursor: pointer; transition: .15s; text-align: left; width: 100%;
+    }
+    .layer-opt:hover { background: var(--green-pale); color: var(--text); }
+    .layer-opt.active { border-color: var(--green); color: var(--green); background: var(--green-pale); }
+
+    /* Loading overlay */
+    .overlay {
+      position: absolute; inset: 0; z-index: 600;
+      background: rgba(8,12,16,.8);
+      display: grid; place-items: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .overlay.on { opacity: 1; pointer-events: all; }
+    .loader {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .loader-ring {
+      width: 42px; height: 42px;
+      border: 2px solid var(--border); border-top-color: var(--green);
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    .loader-text { font-family: var(--font-m); font-size: .72rem; color: var(--green); letter-spacing: 2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Leaflet popup override */
+    .leaflet-popup-content-wrapper {
+      background: var(--surface2) !important;
+      border: 1px solid var(--border2) !important;
+      border-radius: 8px !important; color: var(--text) !important;
+      font-family: var(--font-m) !important; font-size: .75rem !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5) !important;
+    }
+    .leaflet-popup-tip { background: var(--surface2) !important; }
+    .popup-title { color: var(--green); font-weight: 500; margin-bottom: 6px; font-size: .8rem; }
+    .popup-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+    .popup-key { color: var(--muted); }
+    .popup-val { color: var(--white); }
+
+    /* ── Coord detection banner ── */
+    .coord-banner {
+      border-radius: var(--radius); padding: 10px 14px;
+      font-family: var(--font-m); font-size: .76rem; line-height: 1.6;
+    }
+    .coord-banner.detected {
+      background: var(--green-pale); border: 1px solid var(--border2); color: var(--green);
+    }
+    .coord-banner.partial {
+      background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); color: #fbbf24;
+    }
+
+    /* ── Fields side by side ── */
+    .fields-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+
+    /* ── Filter selects (simplified) ── */
+    .filter-block { display: flex; flex-direction: column; gap: 6px; }
+    .filter-block label {
+      font-family: var(--font-m); font-size: .68rem;
+      color: var(--green); text-transform: uppercase; letter-spacing: 1px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .filter-select {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--font-m); font-size: .8rem;
+      border-radius: 6px; outline: none; width: 100%;
+      cursor: pointer; transition: border-color .2s;
+      padding: 0;
+    }
+    .filter-select:focus { border-color: var(--green); }
+    .filter-select option {
+      padding: 6px 10px; background: var(--surface2);
+    }
+    /* Compact multiselect height */
+    .filter-select[multiple] {
+      height: auto; min-height: 80px; max-height: 130px;
+      padding: 4px 0;
+    }
+    .filter-select[multiple] option {
+      padding: 5px 10px;
+    }
+    .filter-select[multiple] option:checked {
+      background: var(--green-dim); color: #fff;
+    }
+    .filter-hint {
+      font-family: var(--font-m); font-size: .65rem;
+      color: var(--muted); margin-top: 2px;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--green-dim); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="h-left">
+    <div class="h-logo"><i class='bx bx-map-alt'></i></div>
+    <div>
+      <div class="h-title">GEO<span>TRACK</span> · Logística</div>
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="h-status">
+      <div class="h-status-dot"></div>
+      <span id="sys-status">ESPERANDO ARCHIVO</span>
+    </div>
+    <div class="h-badge">Johan Bermudez · Portafolio</div>
+  </div>
+</header>
+
+<!-- ══ APP ══ -->
+<div class="app">
+
+  <!-- ── Panel izquierdo ── -->
+  <aside class="panel">
+
+    <!-- Tabs -->
+    <div class="panel-tabs">
+      <button class="tab active" data-tab="upload">
+        <i class='bx bx-upload'></i> Datos
+      </button>
+      <button class="tab" data-tab="filters" id="tab-filters">
+        <i class='bx bx-filter-alt'></i> Filtros
+      </button>
+      <button class="tab" data-tab="kpis" id="tab-kpis">
+        <i class='bx bx-bar-chart-alt-2'></i> KPIs
+      </button>
+    </div>
+
+    <!-- ── TAB: UPLOAD / CONFIG ── -->
+    <div class="panel-body">
+      <div class="panel-section active" id="sec-upload">
+
+        <div>
+          <div class="s-label"><i class='bx bx-file'></i> Archivo</div>
+          <div class="upload-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".csv,.geojson,.json" />
+            <i class='bx bx-cloud-upload upload-zone-icon'></i>
+            <div class="upload-zone-text">
+              Arrastra tu archivo aquí o <strong>haz clic</strong><br/>
+              <small>.csv · .geojson · .json</small>
+            </div>
+            <div class="upload-zone-filename" id="drop-filename"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="btn-upload" disabled>
+          <i class='bx bx-upload'></i> Cargar archivo
+        </button>
+
+        <div class="samples-row">
+          <a href="/api/upload/sample/csv" class="btn btn-ghost">
+            <i class='bx bx-download'></i> Decimal
+          </a>
+          <a href="/api/upload/sample/dms" class="btn btn-ghost">
+            <i class='bx bx-download'></i> DMS
+          </a>
+          <a href="/api/upload/sample/utm" class="btn btn-ghost">
+            <i class='bx bx-download'></i> UTM
+          </a>
+          <a href="/api/upload/sample/wkt" class="btn btn-ghost">
+            <i class='bx bx-download'></i> WKT
+          </a>
+          <a href="/api/upload/sample/mgrs" class="btn btn-ghost">
+            <i class='bx bx-download'></i> MGRS
+          </a>
+          <a href="/api/upload/sample/geo" class="btn btn-ghost">
+            <i class='bx bx-download'></i> GeoJSON
+          </a>
+        </div>
+
+        <div class="alert alert-error" id="alert-error"></div>
+        <div class="alert alert-warn"  id="alert-warn"></div>
+        <div class="alert alert-info"  id="alert-info"></div>
+
+        <!-- Info del archivo cargado (oculta hasta upload) -->
+        <div id="file-info-section" style="display:none; flex-direction:column; gap:14px;">
+
+          <div class="file-info" id="file-info-banner">
+            <i class='bx bx-file-blank'></i>
+            <div><strong id="fi-name">—</strong><br/><span id="fi-meta">—</span></div>
+          </div>
+
+          <!-- Config CSV -->
+          <div id="cfg-csv" style="display:none; flex-direction:column; gap:12px;">
+            <div class="s-label"><i class='bx bx-map-pin'></i> Coordenadas</div>
+
+            <!-- Banner de detección automática -->
+            <div id="coord-detection-banner" class="coord-banner"></div>
+
+            <!-- Formato estándar lat/lon -->
+            <div id="coord-latlon" style="display:none; flex-direction:column; gap:10px;">
+              <div class="fields-row">
+                <div class="field">
+                  <label><i class='bx bx-up-arrow-alt'></i> Latitud</label>
+                  <select id="cfg-lat"></select>
+                </div>
+                <div class="field">
+                  <label><i class='bx bx-right-arrow-alt'></i> Longitud</label>
+                  <select id="cfg-lon"></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sin coordenadas detectadas -->
+            <div id="coord-none" style="display:none;">
+              <div class="alert alert-warn visible" style="display:block;">
+                <i class='bx bx-error-circle'></i>
+                No se encontraron columnas de coordenadas reconocibles en el CSV.
+                Puedes seleccionarlas manualmente si las tienes con otro nombre.
+              </div>
+              <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+                <div class="fields-row">
+                  <div class="field">
+                    <label>Latitud (manual)</label>
+                    <select id="cfg-lat-manual"></select>
+                  </div>
+                  <div class="field">
+                    <label>Longitud (manual)</label>
+                    <select id="cfg-lon-manual"></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Config GeoJSON -->
+          <div id="cfg-geojson" style="display:none; flex-direction:column; gap:10px;">
+            <div class="s-label"><i class='bx bx-shape-polygon'></i> GeoJSON detectado</div>
+            <div class="alert alert-info visible" id="geo-info-msg"></div>
+          </div>
+
+          <button class="btn btn-primary btn-full" id="btn-render">
+            <i class='bx bx-map-pin'></i> Visualizar en mapa
+          </button>
+
+          <button class="btn btn-ghost btn-full" id="btn-new-file">
+            <i class='bx bx-refresh'></i> Cargar otro archivo
+          </button>
+
+        </div>
+      </div>
+
+      <!-- ── TAB: FILTROS ── -->
+      <div class="panel-section" id="sec-filters">
+        <div id="filters-container">
+          <div class="alert alert-info visible">
+            <i class='bx bx-info-circle'></i> Carga un archivo para ver los filtros disponibles.
+          </div>
+        </div>
+        <div id="filter-actions" style="display:none; flex-direction:column; gap:8px;">
+          <button class="btn btn-primary btn-full" id="btn-apply-filters">
+            <i class='bx bx-filter'></i> Aplicar filtros
+          </button>
+          <button class="btn btn-ghost btn-full" id="btn-clear-filters">
+            <i class='bx bx-reset'></i> Restablecer todo
+          </button>
+        </div>
+      </div>
+
+      <!-- ── TAB: KPIs ── -->
+      <div class="panel-section" id="sec-kpis">
+        <div id="kpis-container">
+          <div class="alert alert-info visible">
+            <i class='bx bx-info-circle'></i> Carga un archivo CSV para ver métricas.
+          </div>
+        </div>
+        <div class="field" id="kpi-registros-wrap" style="display:none;">
+          <div class="kpi" style="grid-column:1/-1;">
+            <div class="kpi-label">Registros visibles</div>
+            <div class="kpi-val" id="kpi-registros">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-body -->
+  </aside>
+
+  <!-- ── Mapa ── -->
+  <div class="map-wrap" style="position:relative;">
+    <div id="map"></div>
+
+    <!-- Controles sobre el mapa -->
+    <div class="map-controls">
+      <button class="map-btn active" id="map-btn-points" title="Mostrar / ocultar puntos">
+        <i class='bx bx-map-pin'></i>
+      </button>
+      <button class="map-btn" id="map-btn-zoom" title="Centrar mapa">
+        <i class='bx bx-crosshair'></i>
+      </button>
+      <button class="map-btn" id="map-btn-layer" title="Cambiar capa base">
+        <i class='bx bx-layer'></i>
+      </button>
+    </div>
+
+    <!-- Selector de capas (desplegable) -->
+    <div class="layer-picker" id="layer-picker" style="display:none;">
+      <div class="layer-picker-title"><i class='bx bx-layer'></i> Capa base</div>
+      <button class="layer-opt active" data-layer="dark">
+        <i class='bx bx-moon'></i> Oscuro
+      </button>
+      <button class="layer-opt" data-layer="light">
+        <i class='bx bx-sun'></i> Claro
+      </button>
+      <button class="layer-opt" data-layer="satellite">
+        <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" style="width: 12px; height: 12px;" 
+        fill="currentColor" viewBox="0 0 24 24" >
+        <!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+        <path d="M15 12c1.65 0 3-1.35 3-3s-1.35-3-3-3-3 1.35-3 3c0 .46.11.89.3 1.29l-1.1 1.1L6.11 6.3a.996.996 0 0 0-1.41 0c-3.35 3.35-3.57 8.66-.67 12.26L2.29 20.3l1.41 1.41 1.73-1.73A9.18 9.18 0 0 0 11.19 22a9.2 9.2 0 0 0 6.51-2.69.996.996 0 0 0 0-1.41l-5.09-5.09 1.1-1.1c.39.19.82.3 1.29.3Zm-8.89 5.89a7.21 7.21 0 0 1-.66-9.43l10.09 10.09a7.21 7.21 0 0 1-9.43-.66M15 8c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1"></path><path d="M19.95 4.05a6.9 6.9 0 0 0-2.32-1.54 7.06 7.06 0 0 0-5.27 0l.75 1.85c1.2-.49 2.57-.49 3.76 0 .62.25 1.18.62 1.65 1.1.48.48.85 1.03 1.1 1.65.24.6.37 1.23.37 1.88s-.12 1.28-.37 1.88l1.85.75c.34-.84.51-1.73.51-2.63s-.17-1.79-.51-2.63c-.35-.87-.87-1.65-1.54-2.32Z"></path>
+        </svg> Satélite
+      </button>
+      <button class="layer-opt" data-layer="terrain">
+        <i class='bx bx-landscape'></i> Terreno
+      </button>
+      <button class="layer-opt" data-layer="streets">
+        <i class='bx bx-map'></i> Calles
+      </button>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="map-legend" id="map-legend" style="display:none;">
+      <div class="legend-title"><i class='bx bx-info-circle'></i> Leyenda</div>
+      <div id="legend-items"></div>
+    </div>
+
+    <!-- Stat bar — esquina superior izquierda del mapa -->
+    <div class="map-stat" id="map-stat" style="display:none;">
+      <i class='bx bx-map-pin'></i> <span id="stat-points">0</span> puntos
+      &nbsp;·&nbsp;
+      <i class='bx bx-show' id="stat-visibility-icon"></i>
+      <span id="stat-visibility">visibles</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="overlay" id="loading">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">PROCESANDO...</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════════
+// Estado global
+// ══════════════════════════════════════════════
+const STATE = {
+  fileType:     null,
+  coordInfo:    null,
+  numericCols:  [],
+  categoricals: {},
+  activeFilters:{},
+  markers:      [],
+  geoLayer:     null,
+};
+
+const PALETTE = ['#00c878','#f5a623','#f43f5e','#38bdf8','#a78bfa','#fb923c','#34d399'];
+
+// ══════════════════════════════════════════════
+// Mapa (Leaflet) — inicialización base
+// ══════════════════════════════════════════════
+const map = L.map('map', { zoomControl: false }).setView([4.65, -74.08], 11);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+// ══════════════════════════════════════════════
+// Utilidades
+// ══════════════════════════════════════════════
+const $   = id => document.getElementById(id);
+const setLoad = on => $('loading').classList.toggle('on', on);
+
+function showAlert(id, msg) {
+  const el = $(id);
+  el.textContent = msg;
+  el.classList.toggle('visible', !!msg);
+}
+
+function clearAlerts() {
+  ['alert-error','alert-warn','alert-info'].forEach(id => showAlert(id, ''));
+}
+
+function fmtNum(n) {
+  if (typeof n !== 'number') return n;
+  if (n >= 1_000_000) return (n/1_000_000).toFixed(1)+'M';
+  if (n >= 1_000)     return (n/1_000).toFixed(1)+'K';
+  return n.toFixed(n % 1 === 0 ? 0 : 2);
+}
+
+function buildSelect(el, options, placeholder = '-- ninguno --') {
+  el.innerHTML = `<option value="">${placeholder}</option>`;
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    el.appendChild(o);
+  });
+}
+
+function setStatus(msg) {
+  $('sys-status').textContent = msg;
+}
+
+// ══════════════════════════════════════════════
+// Tabs
+// ══════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    $(`sec-${tab.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ══════════════════════════════════════════════
+// Upload
+// ══════════════════════════════════════════════
+const dropZone  = $('drop-zone');
+const fileInput = $('file-input');
+const btnUpload = $('btn-upload');
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) {
+    $('drop-filename').textContent = fileInput.files[0].name;
+    btnUpload.disabled = false;
+    clearAlerts();
+  }
+});
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault(); dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    fileInput.files = e.dataTransfer.files;
+    $('drop-filename').textContent = file.name;
+    btnUpload.disabled = false;
+    clearAlerts();
+  }
+});
+
+btnUpload.addEventListener('click', async () => {
+  clearAlerts();
+  btnUpload.disabled = true;
+  btnUpload.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Cargando...`;
+  setLoad(true);
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  try {
+    const res  = await fetch('/api/upload/file', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      showAlert('alert-error', data.error || 'Error al cargar el archivo.');
+      return;
+    }
+
+    STATE.fileType  = data.file_type;
+    STATE.coordInfo = data.coord_info;
+
+    // Mostrar advertencias del análisis de coordenadas
+    if (data.coord_info?.warnings?.length) {
+      showAlert('alert-warn', data.coord_info.warnings.join(' | '));
+    }
+
+    // Mostrar sección de config
+    $('file-info-section').style.display = 'flex';
+    $('fi-name').textContent = data.filename;
+
+    if (data.file_type === 'csv') {
+      const numCols = data.coord_info.numeric_cols || [];
+      const catCols = data.coord_info.categorical_cols || [];
+      const allCols = [...numCols, ...catCols];
+      STATE.numericCols = numCols;
+
+      $('fi-meta').textContent = `${data.filas} filas · ${data.columnas} columnas`;
+
+      const ci = data.coord_info;
+
+      // ── Construir banner + sección de config según el formato detectado ──
+      const banner   = $('coord-detection-banner');
+      const secLL    = $('coord-latlon');
+      const secNone  = $('coord-none');
+
+      // Labels amigables por formato
+      const FORMAT_LABELS = {
+        decimal: 'Decimal (lat/lon)',
+        dms:     'DMS — Grados, Minutos, Segundos',
+        utm:     'UTM — Universal Transverse Mercator',
+        wkt:     'WKT Point',
+        mgrs:    'MGRS — Military Grid Reference System',
+      };
+
+      if (ci.has_coords) {
+        // Detección exitosa — mostrar qué se encontró
+        const fmt   = ci.coord_format;
+        const label = FORMAT_LABELS[fmt] || fmt;
+
+        banner.className = 'coord-banner detected';
+
+        // Mensaje específico según formato
+        let detail = '';
+        if (fmt === 'decimal') {
+          detail = `<strong>Lat:</strong> ${ci.lat_col} &nbsp;·&nbsp; <strong>Lon:</strong> ${ci.lon_col}`;
+        } else if (fmt === 'dms') {
+          detail = `<strong>Lat DMS:</strong> ${ci.lat_col} &nbsp;·&nbsp; <strong>Lon DMS:</strong> ${ci.lon_col}`;
+        } else if (fmt === 'utm') {
+          detail = `<strong>Este:</strong> ${ci.utm_e_col} &nbsp;·&nbsp; <strong>Norte:</strong> ${ci.utm_n_col}` +
+                   (ci.utm_zone_col ? ` &nbsp;·&nbsp; <strong>Zona:</strong> ${ci.utm_zone_col}` : ' &nbsp;·&nbsp; <em>Zona 18N por defecto</em>');
+        } else if (fmt === 'wkt') {
+          detail = `<strong>Columna WKT:</strong> ${ci.wkt_col}`;
+        } else if (fmt === 'mgrs') {
+          detail = `<strong>Columna MGRS:</strong> ${ci.mgrs_col}`;
+        }
+
+        banner.innerHTML =
+          `<i class='bx bx-check-circle'></i> Formato detectado: <strong>${label}</strong><br/>${detail}`;
+
+        // Para decimal y DMS mostramos los selects por si quiere cambiar columnas
+        if (fmt === 'decimal' || fmt === 'dms') {
+          buildSelect($('cfg-lat'), fmt === 'decimal' ? numCols : catCols);
+          buildSelect($('cfg-lon'), fmt === 'decimal' ? numCols : catCols);
+          $('cfg-lat').value = ci.lat_col || '';
+          $('cfg-lon').value = ci.lon_col || '';
+          secLL.style.display   = 'flex';
+          secNone.style.display = 'none';
+        } else {
+          // Para UTM, WKT y MGRS la configuración es automática — no hay nada que editar
+          secLL.style.display   = 'none';
+          secNone.style.display = 'none';
+        }
+
+        if (ci.warnings?.length) {
+          showAlert('alert-warn', ci.warnings.join(' | '));
+        }
+
+      } else {
+        // Sin coordenadas detectadas — selección manual lat/lon
+        banner.className = 'coord-banner partial';
+        banner.innerHTML =
+          `<i class='bx bx-error-circle'></i> No se detectaron coordenadas en ningún formato conocido.<br/>
+           Selecciona manualmente las columnas de lat/lon si las tienes con otro nombre.`;
+
+        buildSelect($('cfg-lat-manual'), allCols, '-- selecciona latitud --');
+        buildSelect($('cfg-lon-manual'), allCols, '-- selecciona longitud --');
+        secLL.style.display   = 'none';
+        secNone.style.display = 'block';
+      }
+
+      $('cfg-csv').style.display     = 'flex';
+      $('cfg-geojson').style.display = 'none';
+
+    } else {
+      // GeoJSON
+      $('fi-meta').textContent = `${data.total_features} features · ${data.geometry_types?.join(', ')}`;
+      $('geo-info-msg').innerHTML =
+        `<i class='bx bx-check-circle'></i> GeoJSON válido · ` +
+        `${data.total_features} features · tipos: ${data.geometry_types?.join(', ')} · ` +
+        `propiedades: ${data.properties?.join(', ')}`;
+
+      $('cfg-csv').style.display     = 'none';
+      $('cfg-geojson').style.display = 'flex';
+    }
+
+    setStatus('ARCHIVO LISTO');
+
+  } catch (e) {
+    showAlert('alert-error', 'Error de conexión con el servidor.');
+  } finally {
+    setLoad(false);
+    btnUpload.disabled = false;
+    btnUpload.innerHTML = `<i class='bx bx-upload'></i> Cargar archivo`;
+  }
+});
+
+// ══════════════════════════════════════════════
+// Renderizar mapa
+// ══════════════════════════════════════════════
+$('btn-render').addEventListener('click', async () => {
+  setLoad(true);
+  setStatus('RENDERIZANDO...');
+  clearMapLayers();
+
+  try {
+    if (STATE.fileType === 'csv') {
+      await renderCSV();
+    } else {
+      await renderGeoJSON();
+    }
+    await loadFilters();
+    await loadKPIs();
+    setStatus('MAPA ACTIVO');
+  } catch (e) {
+    console.error(e);
+    setStatus('ERROR');
+  } finally {
+    setLoad(false);
+  }
+});
+
+async function renderCSV() {
+  const ci  = STATE.coordInfo;
+  const fmt = ci?.coord_format;
+
+  const qs = new URLSearchParams();
+
+  if (!ci?.has_coords) {
+    // Modo manual — necesita lat/lon seleccionados explícitamente
+    const coordNoneVisible = $('coord-none').style.display !== 'none';
+    const latCol = coordNoneVisible ? $('cfg-lat-manual').value : $('cfg-lat').value;
+    const lonCol = coordNoneVisible ? $('cfg-lon-manual').value : $('cfg-lon').value;
+    if (!latCol || !lonCol) {
+      showAlert('alert-error', 'Debes seleccionar las columnas de latitud y longitud.');
+      return;
+    }
+    qs.set('lat_col', latCol);
+    qs.set('lon_col', lonCol);
+
+  } else if (fmt === 'decimal' || fmt === 'dms') {
+    // El usuario puede haber cambiado los selects
+    const latCol = $('cfg-lat').value;
+    const lonCol = $('cfg-lon').value;
+    if (!latCol || !lonCol) {
+      showAlert('alert-error', 'Selecciona las columnas de lat/lon.');
+      return;
+    }
+    qs.set('lat_col', latCol);
+    qs.set('lon_col', lonCol);
+
+  }
+  // Para UTM, WKT y MGRS no se envían parámetros de columna —
+  // el backend los detecta automáticamente desde la sesión.
+
+  applyActiveFiltersToQS(qs);
+
+  const res  = await fetch(`/api/geo/points?${qs}`);
+  const data = await res.json();
+
+  if (data.error) { showAlert('alert-error', data.error); return; }
+  if (data.warnings?.length) showAlert('alert-warn', data.warnings.join(' | '));
+
+  if (!data.points?.length) {
+    showAlert('alert-warn', 'No hay puntos para mostrar con los filtros actuales.');
+    return;
+  }
+
+  // Construir mapa de colores por valor
+  const colorMap = {};
+  const colorVals = [...new Set(data.points.map(p => p.color_val).filter(Boolean))];
+  colorVals.forEach((v, i) => colorMap[v] = PALETTE[i % PALETTE.length]);
+
+  // Calcular rango de tamaños
+  const sizeVals = data.points.map(p => p.size_val).filter(v => v != null);
+  const sizeMin  = Math.min(...sizeVals);
+  const sizeMax  = Math.max(...sizeVals);
+
+  const bounds = [];
+
+  data.points.forEach(p => {
+    const color = p.color_val ? (colorMap[p.color_val] || PALETTE[0]) : PALETTE[0];
+    let radius = 8;
+    if (p.size_val != null && sizeMax > sizeMin) {
+      radius = 5 + ((p.size_val - sizeMin) / (sizeMax - sizeMin)) * 14;
+    }
+
+    const marker = L.circleMarker([p.lat, p.lon], {
+      radius, color, fillColor: color, fillOpacity: .8,
+      weight: 1.5, opacity: .9,
+    });
+
+    // Popup
+    const propsHTML = Object.entries(p.props)
+      .slice(0, 8)
+      .map(([k,v]) => `<div class="popup-row"><span class="popup-key">${k}</span><span class="popup-val">${v}</span></div>`)
+      .join('');
+
+    marker.bindPopup(`<div class="popup-title"><i class='bx bx-map-pin'></i> Punto de visita</div>${propsHTML}`);
+    marker.addTo(map);
+    STATE.markers.push(marker);
+    bounds.push([p.lat, p.lon]);
+  });
+
+  // Leyenda de colores
+  if (colorVals.length > 0) {
+    $('legend-items').innerHTML = colorVals.map(v => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${colorMap[v]}"></div>
+        <div class="legend-label">${v}</div>
+      </div>
+    `).join('');
+    $('map-legend').style.display = 'block';
+  }
+
+  // Stats
+  $('stat-points').textContent = data.total;
+  $('map-stat').style.display = 'block';
+
+  // Centrar mapa
+  if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
+}
+
+async function renderGeoJSON() {
+  const res  = await fetch('/api/geo/geojson');
+  const data = await res.json();
+
+  if (data.error) { showAlert('alert-error', data.error); return; }
+
+  STATE.geoLayer = L.geoJSON(data, {
+    style: feature => ({
+      fillColor:   PALETTE[0],
+      fillOpacity: 0.25,
+      color:       PALETTE[0],
+      weight:      2,
+      opacity:     0.9,
+    }),
+    onEachFeature: (feature, layer) => {
+      const props = feature.properties || {};
+      const rows  = Object.entries(props)
+        .map(([k,v]) => `<div class="popup-row"><span class="popup-key">${k}</span><span class="popup-val">${v}</span></div>`)
+        .join('');
+      layer.bindPopup(`<div class="popup-title"><i class='bx bx-shape-polygon'></i> Zona</div>${rows}`);
+
+      layer.on('mouseover', () => layer.setStyle({ fillOpacity: .5 }));
+      layer.on('mouseout',  () => layer.setStyle({ fillOpacity: .25 }));
+    },
+  }).addTo(map);
+
+  map.fitBounds(STATE.geoLayer.getBounds(), { padding: [20, 20] });
+  const count = data.features?.length || 0;
+  $('stat-points').textContent = `${count} zonas`;
+  $('map-stat').style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// Filtros
+// ══════════════════════════════════════════════
+async function loadFilters() {
+  const res  = await fetch('/api/geo/filtros');
+  const data = await res.json();
+  if (data.error) return;
+
+  STATE.categoricals = data.filtros || {};
+  STATE.activeFilters = {};
+  Object.keys(STATE.categoricals).forEach(col => {
+    STATE.activeFilters[col] = new Set(STATE.categoricals[col]);
+  });
+
+  buildFilterUI();
+  $('filter-actions').style.display = 'flex';
+}
+
+function buildFilterUI() {
+  const container = $('filters-container');
+  container.innerHTML = '';
+
+  if (!Object.keys(STATE.categoricals).length) {
+    container.innerHTML = '<div class="alert alert-info visible"><i class=\'bx bx-info-circle\'></i> No hay columnas categóricas para filtrar.</div>';
+    return;
+  }
+
+  Object.entries(STATE.categoricals).forEach(([col, vals]) => {
+    const block = document.createElement('div');
+    block.className = 'filter-block';
+
+    // Construir opciones del multiselect
+    const options = vals.map(v =>
+      `<option value="${v}" selected>${v}</option>`
+    ).join('');
+
+    block.innerHTML = `
+      <label><i class='bx bx-filter-alt'></i> ${col}</label>
+      <select class="filter-select" id="fsel-${col}" multiple data-col="${col}">
+        ${options}
+      </select>
+      <span class="filter-hint">Ctrl+clic para selección múltiple · Todo seleccionado = sin filtro</span>
+    `;
+    container.appendChild(block);
+  });
+
+  // Sincronizar STATE.activeFilters al cambiar selección
+  container.querySelectorAll('.filter-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const col = sel.dataset.col;
+      STATE.activeFilters[col] = new Set(
+        [...sel.options].filter(o => o.selected).map(o => o.value)
+      );
+    });
+  });
+}
+
+$('btn-apply-filters').addEventListener('click', async () => {
+  setLoad(true);
+  clearMapLayers();
+  try {
+    if (STATE.fileType === 'csv') await renderCSV();
+    else await renderGeoJSONFiltered();
+    await loadKPIs();
+  } finally {
+    setLoad(false);
+  }
+});
+
+$('btn-clear-filters').addEventListener('click', () => {
+  Object.keys(STATE.categoricals).forEach(col => {
+    STATE.activeFilters[col] = new Set(STATE.categoricals[col]);
+    const sel = $(`fsel-${col}`);
+    if (sel) [...sel.options].forEach(o => o.selected = true);
+  });
+});
+
+async function renderGeoJSONFiltered() {
+  const qs = new URLSearchParams();
+  applyActiveFiltersToQS(qs);
+  const res  = await fetch(`/api/geo/geojson?${qs}`);
+  const data = await res.json();
+  if (data.error) return;
+
+  STATE.geoLayer = L.geoJSON(data, {
+    style: { fillColor: PALETTE[0], fillOpacity: .25, color: PALETTE[0], weight: 2 },
+    onEachFeature: (feat, layer) => {
+      const rows = Object.entries(feat.properties || {})
+        .map(([k,v]) => `<div class="popup-row"><span class="popup-key">${k}</span><span class="popup-val">${v}</span></div>`)
+        .join('');
+      layer.bindPopup(`<div class="popup-title"><i class='bx bx-shape-polygon'></i> Zona</div>${rows}`);
+    },
+  }).addTo(map);
+}
+
+function applyActiveFiltersToQS(qs) {
+  Object.entries(STATE.activeFilters).forEach(([col, vals]) => {
+    vals.forEach(v => qs.append(col, v));
+  });
+}
+
+// ══════════════════════════════════════════════
+// KPIs
+// ══════════════════════════════════════════════
+async function loadKPIs() {
+  if (STATE.fileType !== 'csv') return;
+  const qs = new URLSearchParams();
+  applyActiveFiltersToQS(qs);
+
+  const res  = await fetch(`/api/geo/kpis?${qs}`);
+  const data = await res.json();
+  if (data.error) return;
+
+  const container = $('kpis-container');
+  container.innerHTML = '';
+
+  if (!Object.keys(data.kpis).length) {
+    container.innerHTML = '<div class="alert alert-info visible">No hay métricas numéricas disponibles.</div>';
+    return;
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'kpis-grid';
+
+  Object.entries(data.kpis).forEach(([col, vals]) => {
+    grid.innerHTML += `
+      <div class="kpi">
+        <div class="kpi-label">${col} · suma</div>
+        <div class="kpi-val">${fmtNum(vals.suma)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">${col} · prom</div>
+        <div class="kpi-val">${fmtNum(vals.promedio)}</div>
+      </div>
+    `;
+  });
+
+  container.appendChild(grid);
+  $('kpi-registros').textContent = data.registros;
+  $('kpi-registros-wrap').style.display = 'block';
+}
+
+// ══════════════════════════════════════════════
+// Capas base del mapa
+// ══════════════════════════════════════════════
+const TILE_LAYERS = {
+  dark: {
+    url:   'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attr:  '© CartoDB',
+  },
+  light: {
+    url:   'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attr:  '© CartoDB',
+  },
+  satellite: {
+    url:   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attr:  '© Esri',
+  },
+  terrain: {
+    url:   'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attr:  '© OpenTopoMap',
+  },
+  streets: {
+    url:   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attr:  '© OpenStreetMap',
+  },
+};
+
+let currentLayerKey = 'dark';
+let tileLayer = L.tileLayer(TILE_LAYERS.dark.url, {
+  attribution: TILE_LAYERS.dark.attr, maxZoom: 19
+}).addTo(map);
+
+// ── Botón de capas: abre/cierra el picker ──
+$('map-btn-layer').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const picker = $('layer-picker');
+  const isOpen = picker.style.display === 'flex';
+  picker.style.display = isOpen ? 'none' : 'flex';
+  $('map-btn-layer').classList.toggle('active', !isOpen);
+});
+
+// Cerrar el picker al hacer clic fuera
+document.addEventListener('click', (e) => {
+  const picker = $('layer-picker');
+  if (!picker.contains(e.target) && e.target !== $('map-btn-layer')) {
+    picker.style.display = 'none';
+    $('map-btn-layer').classList.remove('active');
+  }
+});
+
+// ── Opciones del picker ──
+document.querySelectorAll('.layer-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.layer;
+    if (key === currentLayerKey) return;
+
+    map.removeLayer(tileLayer);
+    const cfg = TILE_LAYERS[key];
+    tileLayer = L.tileLayer(cfg.url, { attribution: cfg.attr, maxZoom: 19 }).addTo(map);
+    currentLayerKey = key;
+
+    document.querySelectorAll('.layer-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('layer-picker').style.display = 'none';
+    $('map-btn-layer').classList.remove('active');
+  });
+});
+
+// ── Botón mostrar/ocultar puntos ──
+let pointsVisible = true;
+
+$('map-btn-points').addEventListener('click', () => {
+  pointsVisible = !pointsVisible;
+
+  // Marcadores CSV
+  STATE.markers.forEach(m => {
+    if (pointsVisible) m.addTo(map);
+    else               map.removeLayer(m);
+  });
+
+  // Capa GeoJSON
+  if (STATE.geoLayer) {
+    if (pointsVisible) STATE.geoLayer.addTo(map);
+    else               map.removeLayer(STATE.geoLayer);
+  }
+
+  $('map-btn-points').classList.toggle('active', pointsVisible);
+
+  // Actualizar stat bar
+  const icon = $('stat-visibility-icon');
+  const txt  = $('stat-visibility');
+  if (icon && txt) {
+    icon.className = pointsVisible ? 'bx bx-show' : 'bx bx-hide';
+    txt.textContent = pointsVisible ? 'visibles' : 'ocultos';
+  }
+});
+
+// ── Centrar mapa ──
+$('map-btn-zoom').addEventListener('click', () => {
+  if (STATE.markers.length) {
+    map.fitBounds(STATE.markers.map(m => m.getLatLng()), { padding: [30, 30] });
+  } else if (STATE.geoLayer) {
+    map.fitBounds(STATE.geoLayer.getBounds(), { padding: [20, 20] });
+  }
+});
+
+// ══════════════════════════════════════════════
+// Reset
+// ══════════════════════════════════════════════
+function clearMapLayers() {
+  STATE.markers.forEach(m => map.removeLayer(m));
+  STATE.markers = [];
+  if (STATE.geoLayer) { map.removeLayer(STATE.geoLayer); STATE.geoLayer = null; }
+  $('map-legend').style.display = 'none';
+
+  // Restaurar visibilidad al limpiar
+  pointsVisible = true;
+  $('map-btn-points').classList.add('active');
+  const icon = $('stat-visibility-icon');
+  const txt  = $('stat-visibility');
+  if (icon && txt) { icon.className = 'bx bx-show'; txt.textContent = 'visibles'; }
+}
+
+$('btn-new-file').addEventListener('click', () => {
+  clearMapLayers();
+  fileInput.value = '';
+  $('drop-filename').textContent = '';
+  $('file-info-section').style.display = 'none';
+  $('cfg-csv').style.display = 'none';
+  $('cfg-geojson').style.display = 'none';
+  $('btn-apply-filters') && ($('filter-actions').style.display = 'none');
+  btnUpload.disabled = true;
+  clearAlerts();
+  setStatus('ESPERANDO ARCHIVO');
+  $('map-stat').style.display = 'none';
+  $('filters-container').innerHTML = '<div class="alert alert-info visible"><i class=\'bx bx-info-circle\'></i> Carga un archivo para ver los filtros disponibles.</div>';
+  $('kpis-container').innerHTML = '<div class="alert alert-info visible"><i class=\'bx bx-info-circle\'></i> Carga un archivo CSV para ver métricas.</div>';
+  $('kpi-registros-wrap').style.display = 'none';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+id,asesor,zona,dia_visita,utm_easting,utm_northing,zona_utm,cliente,tipo_cliente,unidades_entregadas,valor_entrega_cop,estado_visita
+1,Carlos M.,Norte,Lunes,602910,520787,18N,Supermercado El Ahorro,Mayorista,320,4800000,Completada
+2,Carlos M.,Norte,Lunes,603651,521761,18N,Tienda Don Pedro,Minorista,45,675000,Completada
+3,Carlos M.,Norte,Lunes,604372,522281,18N,Minimarket La Esquina,Minorista,80,1200000,Completada
+4,Carlos M.,Norte,Lunes,605225,523023,18N,Distribuidora Rápida,Mayorista,410,6150000,Completada
+5,Carlos M.,Norte,Miércoles,602389,520554,18N,Bodega Central Norte,Mayorista,390,5850000,Completada
+6,Carlos M.,Norte,Miércoles,603131,521296,18N,Tienda La Esperanza,Minorista,60,900000,No Visitado
+7,Carlos M.,Norte,Viernes,603873,522037,18N,Supermercado Familiar,Mayorista,450,6750000,Completada
+8,Carlos M.,Norte,Viernes,604615,522768,18N,Abarrotes El Sol,Minorista,35,525000,Completada
+9,Laura P.,Sur,Lunes,597237,506430,18N,Megatienda Sur,Mayorista,280,4200000,Completada
+10,Laura P.,Sur,Lunes,597859,505812,18N,Tienda La Colina,Minorista,55,825000,Completada
+11,Laura P.,Sur,Lunes,598481,505171,18N,Distribuidora Sur Express,Mayorista,310,4650000,Completada
+12,Laura P.,Sur,Miércoles,596993,506673,18N,Minimercado Nuevo Horizonte,Minorista,70,1050000,Completada
+13,Laura P.,Sur,Miércoles,597615,506055,18N,Bodega El Progreso,Mayorista,295,4425000,No Visitado
+14,Laura P.,Sur,Viernes,598237,505414,18N,Tienda San José,Minorista,48,720000,Completada
+15,Laura P.,Sur,Viernes,598859,504774,18N,Supermercado La Victoria,Mayorista,340,5100000,Completada
+16,Andrés R.,Oriente,Lunes,609551,514428,18N,Bodega Oriente,Mayorista,540,2700000,Completada
+17,Andrés R.,Oriente,Lunes,610172,515037,18N,Tienda El Porvenir,Minorista,65,325000,Completada
+18,Andrés R.,Oriente,Lunes,610792,515657,18N,Minimercado Los Pinos,Minorista,90,450000,Completada
+19,Andrés R.,Oriente,Miércoles,611412,516277,18N,Distribuidora Este,Mayorista,610,3050000,Completada
+20,Andrés R.,Oriente,Miércoles,609308,514184,18N,Abarrotes La Montaña,Minorista,50,250000,No Visitado
+21,Diana V.,Occidente,Lunes,594761,517604,18N,Megabodega Occidente,Mayorista,180,2160000,Completada
+22,Diana V.,Occidente,Lunes,595383,517107,18N,Tienda El Retiro,Minorista,40,480000,Completada
+23,Diana V.,Occidente,Miércoles,596626,516124,18N,Distribuidora Oeste,Mayorista,220,2640000,Completada
+24,Diana V.,Occidente,Viernes,595139,517350,18N,Supermercado Las Acacias,Mayorista,260,3120000,Completada

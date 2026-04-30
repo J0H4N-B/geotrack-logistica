@@ -1,0 +1,25 @@
+id,asesor,zona,dia_visita,lat_dms,lon_dms,cliente,tipo_cliente,unidades_entregadas,valor_entrega_cop,estado_visita
+1,Carlos M.,Norte,Lunes,4°42'39"N,74°4'19"W,Supermercado El Ahorro,Mayorista,320,4800000,Completada
+2,Carlos M.,Norte,Lunes,4°43'11"N,74°3'55"W,Tienda Don Pedro,Minorista,45,675000,Completada
+3,Carlos M.,Norte,Lunes,4°43'28"N,74°3'32"W,Minimarket La Esquina,Minorista,80,1200000,Completada
+4,Carlos M.,Norte,Lunes,4°43'52"N,74°3'4"W,Distribuidora Rápida,Mayorista,410,6150000,Completada
+5,Carlos M.,Norte,Miércoles,4°42'32"N,74°4'36"W,Bodega Central Norte,Mayorista,390,5850000,Completada
+6,Carlos M.,Norte,Miércoles,4°42'56"N,74°4'12"W,Tienda La Esperanza,Minorista,60,900000,No Visitado
+7,Carlos M.,Norte,Viernes,4°43'20"N,74°3'48"W,Supermercado Familiar,Mayorista,450,6750000,Completada
+8,Carlos M.,Norte,Viernes,4°43'44"N,74°3'24"W,Abarrotes El Sol,Minorista,35,525000,Completada
+9,Laura P.,Sur,Lunes,4°34'52"N,74°7'24"W,Megatienda Sur,Mayorista,280,4200000,Completada
+10,Laura P.,Sur,Lunes,4°34'32"N,74°7'4"W,Tienda La Colina,Minorista,55,825000,Completada
+11,Laura P.,Sur,Lunes,4°34'11"N,74°6'44"W,Distribuidora Sur Express,Mayorista,310,4650000,Completada
+12,Laura P.,Sur,Miércoles,4°35'0"N,74°7'32"W,Minimercado Nuevo Horizonte,Minorista,70,1050000,Completada
+13,Laura P.,Sur,Miércoles,4°34'40"N,74°7'12"W,Bodega El Progreso,Mayorista,295,4425000,No Visitado
+14,Laura P.,Sur,Viernes,4°34'19"N,74°6'51"W,Tienda San José,Minorista,48,720000,Completada
+15,Laura P.,Sur,Viernes,4°33'58"N,74°6'31"W,Supermercado La Victoria,Mayorista,340,5100000,Completada
+16,Andrés R.,Oriente,Lunes,4°39'12"N,74°0'44"W,Bodega Oriente,Mayorista,540,2700000,Completada
+17,Andrés R.,Oriente,Lunes,4°39'32"N,74°0'24"W,Tienda El Porvenir,Minorista,65,325000,Completada
+18,Andrés R.,Oriente,Lunes,4°39'52"N,74°0'4"W,Minimercado Los Pinos,Minorista,90,450000,Completada
+19,Andrés R.,Oriente,Miércoles,4°40'12"N,73°59'44"W,Distribuidora Este,Mayorista,610,3050000,Completada
+20,Andrés R.,Oriente,Miércoles,4°39'4"N,74°0'52"W,Abarrotes La Montaña,Minorista,50,250000,No Visitado
+21,Diana V.,Occidente,Lunes,4°40'56"N,74°8'44"W,Megabodega Occidente,Mayorista,180,2160000,Completada
+22,Diana V.,Occidente,Lunes,4°40'40"N,74°8'24"W,Tienda El Retiro,Minorista,40,480000,Completada
+23,Diana V.,Occidente,Miércoles,4°40'8"N,74°7'44"W,Distribuidora Oeste,Mayorista,220,2640000,Completada
+24,Diana V.,Occidente,Viernes,4°40'48"N,74°8'32"W,Supermercado Las Acacias,Mayorista,260,3120000,Completada

@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "zona": "Norte",
+        "asesor": "Carlos M. / Miguel S.",
+        "clientes_activos": 24,
+        "ventas_mes_cop": 18750000,
+        "cobertura_pct": 92
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-74.0900, 4.7050],
+          [-74.0450, 4.7050],
+          [-74.0450, 4.7400],
+          [-74.0900, 4.7400],
+          [-74.0900, 4.7050]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zona": "Sur",
+        "asesor": "Laura P. / Sofia L.",
+        "clientes_activos": 18,
+        "ventas_mes_cop": 15320000,
+        "cobertura_pct": 85
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-74.1400, 4.5600],
+          [-74.1000, 4.5600],
+          [-74.1000, 4.5950],
+          [-74.1400, 4.5950],
+          [-74.1400, 4.5600]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zona": "Oriente",
+        "asesor": "Andrés R. / Ricardo B.",
+        "clientes_activos": 20,
+        "ventas_mes_cop": 12480000,
+        "cobertura_pct": 78
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-74.0250, 4.6400],
+          [-73.9850, 4.6400],
+          [-73.9850, 4.6800],
+          [-74.0250, 4.6800],
+          [-74.0250, 4.6400]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zona": "Occidente",
+        "asesor": "Diana V. / Valentina C.",
+        "clientes_activos": 22,
+        "ventas_mes_cop": 16900000,
+        "cobertura_pct": 88
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-74.1600, 4.6650],
+          [-74.1250, 4.6650],
+          [-74.1250, 4.6950],
+          [-74.1600, 4.6950],
+          [-74.1600, 4.6650]
+        ]]
+      }
+    }
+  ]
+}
